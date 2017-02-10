@@ -1,0 +1,14 @@
+{
+  "name": "socket.io-emitter-go-test",
+  "version": "1.0.0",
+  "description": "socke.io-emitter-go-test",
+  "scripts": {},
+  "author": "stackcats",
+  "license": "MIT",
+  "dependencies": {
+    "redis": "^2.5.3",
+    "socket.io": "^1.4.6",
+    "socket.io-client": "^1.7.2",
+    "socket.io-redis": "3.1.0"
+  }
+}
