@@ -1,12 +1,12 @@
-const socket = require('socket.io-client')('http://localhost:3000');
+const socket = require('socket.io-client')('http://localhost:3000/stackcats');
 
 socket.on('connect', () => {
   console.log('connect');
 });
 
-socket.on('ping', (msg) => {
-  console.log('ping: ', msg);
-  socket.emit('pong', 'Hello World');
+socket.on('helloclient', (msg) => {
+  console.log('helloclient: ', msg);
+  socket.emit('helloserver', 'Hello World');
 });
 
 socket.on('disconnect', () => {

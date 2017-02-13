@@ -11,13 +11,18 @@ io.adapter(adapter({
   key: 'socket.io'
 }));
 
-io.on('connection', (socket) => {
-  socket.emit('ping', 'test');
-  socket.on('pong', (msg) => {
+const nsp = io.of('stackcats');
+
+nsp.on('connection', (socket) => {
+  console.log(socket);
+  socket.emit('helloclient', 'test');
+  socket.join('test1');
+  socket.join('test2');
+  socket.on('helloserver', (msg) => {
     console.log(msg);
   });
 });
 
-io.on('error', (err) => {
+nsp.on('error', (err) => {
   console.log(err);
 });

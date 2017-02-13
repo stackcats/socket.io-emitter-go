@@ -13,7 +13,7 @@ $ go get github.com/stackcats/socket.io-emitter-go
 opts := &emitter.Options{}
 socket := emitter.NewEmitter(opts)
 defer socket.Close()
-socket.Broadcast().Emit("ping", "Hello World")
+socket.Broadcast().Emit("message", "Hello World")
 ```
 ## License
 
