@@ -102,7 +102,6 @@ func (e *Emitter) Emit(data ...interface{}) (*Emitter, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(buf))
 	if len(e.rooms) > 0 {
 		for _, room := range e.rooms {
 			chnRoom := fmt.Sprintf("%s%s#", chn, room)
