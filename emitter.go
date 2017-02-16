@@ -24,6 +24,8 @@ type Options struct {
 	Key string
 	// unix domain socket to connect to redis on ("/tmp/redis.sock")
 	Socket string
+	// redis client
+	Redis *redis.Client
 }
 
 // Emitter Socket.IO redis base emitter
@@ -38,22 +40,26 @@ type Emitter struct {
 func NewEmitter(opts *Options) *Emitter {
 	emitter := &Emitter{}
 
-	host := "127.0.0.1"
-	if opts.Host != "" {
-		host = opts.Host
-	}
+	if opts.Redis != nil {
+		emitter.redis = opts.Redis
+	} else {
+		host := "127.0.0.1"
+		if opts.Host != "" {
+			host = opts.Host
+		}
 
-	port := 6379
-	if opts.Port > 0 && opts.Port < 65536 {
-		port = opts.Port
-	}
+		port := 6379
+		if opts.Port > 0 && opts.Port < 65536 {
+			port = opts.Port
+		}
 
-	redisURI := fmt.Sprintf("%s:%d", host, port)
-	emitter.redis = redis.NewClient(&redis.Options{
-		Addr:     redisURI,
-		Password: "",
-		DB:       0,
-	})
+		redisURI := fmt.Sprintf("%s:%d", host, port)
+		emitter.redis = redis.NewClient(&redis.Options{
+			Addr:     redisURI,
+			Password: "",
+			DB:       0,
+		})
+	}
 
 	emitter.prefix = "socket.io"
 	if opts.Key != "" {

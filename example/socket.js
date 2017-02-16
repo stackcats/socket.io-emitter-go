@@ -14,7 +14,6 @@ io.adapter(adapter({
 const nsp = io.of('stackcats');
 
 nsp.on('connection', (socket) => {
-  console.log(socket);
   socket.emit('helloclient', 'test');
   socket.join('test1');
   socket.join('test2');
