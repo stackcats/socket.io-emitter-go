@@ -20,6 +20,10 @@ type Options struct {
 	Host string
 	// port to connect to redis on (6379)
 	Port int
+	// password to connect to redis
+	Password string
+	// DB
+	DB int
 	// the name of the key to pub/sub events on as prefix (socket.io)
 	Key string
 	// unix domain socket to connect to redis on ("/tmp/redis.sock")
@@ -56,8 +60,8 @@ func NewEmitter(opts *Options) *Emitter {
 		redisURI := fmt.Sprintf("%s:%d", host, port)
 		emitter.redis = redis.NewClient(&redis.Options{
 			Addr:     redisURI,
-			Password: "",
-			DB:       0,
+			Password: opts.Password,
+			DB:       opts.DB,
 		})
 	}
 
