@@ -3,8 +3,10 @@ package emitter
 import (
 	"bytes"
 	"fmt"
-	"gopkg.in/redis.v5"
-	"gopkg.in/vmihailenco/msgpack.v2"
+	"time"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/vmihailenco/msgpack/v4"
 )
 
 const (
@@ -12,14 +14,15 @@ const (
 	gEvent       = 2
 	gBinaryEvent = 5
 	uid          = "emitter"
+
+	redisPoolMaxIdle   = 80
+	redisPoolMaxActive = 12000 // max number of connections
 )
 
 // Options ...
 type Options struct {
-	// host to connect to redis on (localhost)
+	// host to connect to redis on (localhost:6379)
 	Host string
-	// port to connect to redis on (6379)
-	Port int
 	// password to connect to redis
 	Password string
 	// DB
@@ -28,13 +31,11 @@ type Options struct {
 	Key string
 	// unix domain socket to connect to redis on ("/tmp/redis.sock")
 	Socket string
-	// redis client
-	Redis *redis.Client
 }
 
 // Emitter Socket.IO redis base emitter
 type Emitter struct {
-	redis  *redis.Client
+	redis  *redis.Pool
 	prefix string
 	rooms  []string
 	flags  map[string]interface{}
@@ -47,15 +48,12 @@ func NewEmitter(opts *Options) *Emitter {
 	if opts.Redis != nil {
 		emitter.redis = opts.Redis
 	} else {
-		host := "127.0.0.1"
+		host := "127.0.0.1:6379"
 		if opts.Host != "" {
 			host = opts.Host
 		}
 
-		port := 6379
-		if opts.Port > 0 && opts.Port < 65536 {
-			port = opts.Port
-		}
+		initRedisConnPool(&emitter, opts)
 
 		redisURI := fmt.Sprintf("%s:%d", host, port)
 		emitter.redis = redis.NewClient(&redis.Options{
@@ -195,4 +193,38 @@ func hasBin(data ...interface{}) bool {
 	}
 
 	return false
+}
+
+func initRedisConnPool(emitter *Emitter, opts Options) {
+	if opts.Host == "" {
+		panic("Missing redis `host`")
+	}
+	emitter.redis = newPool(opts)
+}
+
+func newPool(opts Options) *redis.Pool {
+	return &redis.Pool{
+		MaxIdle:   redisPoolMaxIdle,
+		MaxActive: redisPoolMaxActive,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", opts.Host)
+			if err != nil {
+				return nil, err
+			}
+
+			if opts.Password != "" {
+				if _, err := c.Do("AUTH", opts.Password); err != nil {
+					c.Close()
+					return nil, err
+				}
+				return c, err
+			}
+
+			return c, err
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			_, err := c.Do("PING")
+			return err
+		},
+	}
 }
