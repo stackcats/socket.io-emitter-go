@@ -31,6 +31,8 @@ type Options struct {
 	Key string
 	// unix domain socket to connect to redis on ("/tmp/redis.sock")
 	Socket string
+	// redis pool
+	Redis *redis.Pool
 }
 
 // Emitter Socket.IO redis base emitter
